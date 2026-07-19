@@ -1,0 +1,22 @@
+.nav-link {
+  transition: color 0.2s ease;
+}
+
+.nav-link:hover {
+  color: white !important;
+}
+
+.nav-link.active {
+  position: relative;
+}
+
+.nav-link.active::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 2px;
+  height: 2px;
+  background: #0d6efd;
+  border-radius: 5px;
+}
