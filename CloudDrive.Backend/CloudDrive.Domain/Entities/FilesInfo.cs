@@ -4,7 +4,7 @@ namespace CloudDrive.Domain.Entities
     {
         public Guid Id { get; set; }
         public Guid OwnerId { get; set; }
-        public Guid FolderId { get; set; }
+        public Guid? FolderId { get; set; }
         public required string OrginalName { get; set; }
         public required string StorageKey { get; set; }
         public required string Extension { get; set; }
