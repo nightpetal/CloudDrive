@@ -1,6 +1,6 @@
 namespace CloudDrive.Domain.Entities
 {
-    public class FolderId
+    public class Folder
     {
         public Guid Id { get; set; }
         public Guid OwnerId { get; set; }

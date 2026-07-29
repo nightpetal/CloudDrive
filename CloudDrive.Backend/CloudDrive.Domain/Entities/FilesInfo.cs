@@ -1,6 +1,6 @@
 namespace CloudDrive.Domain.Entities
 {
-    public class File
+    public class FilesInfo
     {
         public Guid Id { get; set; }
         public Guid OwnerId { get; set; }
