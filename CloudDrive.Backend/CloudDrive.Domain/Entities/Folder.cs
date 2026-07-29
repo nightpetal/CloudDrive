@@ -1,0 +1,13 @@
+namespace CloudDrive.Domain.Entities
+{
+    public class FolderId
+    {
+        public Guid Id { get; set; }
+        public Guid OwnerId { get; set; }
+        public Guid ParentFolderId { get; set; }
+        public required string Name { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+        public DateTime DeletedAt { get; set; }
+    }
+}
