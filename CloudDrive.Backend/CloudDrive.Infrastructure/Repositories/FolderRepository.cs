@@ -31,9 +31,13 @@ namespace CloudDrive.Infrastructure.Repositories
             return true;
         }
 
-        public async Task<IEnumerable<Folder>> GetAllAsync(CancellationToken token)
+        public async Task<IEnumerable<Folder>> GetAllAsync(int page, int pageSize, CancellationToken token)
         {
-            return await _context.Folders.ToListAsync(token);
+            return await _context.Folders
+            .OrderBy(f => f.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(token);
         }
 
         public async Task<Folder?> GetByIdAsync(Guid folderId, CancellationToken token)

@@ -4,7 +4,7 @@ namespace CloudDrive.Application.Interfaces
 {
     public interface IFolderRepository
     {
-        Task<IEnumerable<Folder>> GetAllAsync(CancellationToken token);
+        Task<IEnumerable<Folder>> GetAllAsync(int page, int pageSize, CancellationToken token);
         Task<Folder?> GetByIdAsync(Guid fileId, CancellationToken token);
         Task<Folder> CreateAsync(Folder folder, CancellationToken token);
         Task<Folder?> UpdateAsync(Folder folder, CancellationToken token);

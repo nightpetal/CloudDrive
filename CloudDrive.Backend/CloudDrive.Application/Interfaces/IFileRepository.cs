@@ -4,7 +4,7 @@ namespace CloudDrive.Application.Interfaces
 {
     public interface IFileRepository
     {
-        Task<IEnumerable<FilesInfo>> GetAllAsync(CancellationToken token);
+        Task<IEnumerable<FilesInfo>> GetAllAsync(int page, int pageSize, CancellationToken token);
         Task<FilesInfo?> GetByIdAsync(Guid fileId, CancellationToken token);
         Task<FilesInfo> CreateAsync(FilesInfo filesInfo, CancellationToken token);
         Task<FilesInfo?> UpdateAsync(FilesInfo filesInfo, CancellationToken token);
