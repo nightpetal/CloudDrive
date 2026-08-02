@@ -50,7 +50,8 @@ namespace CloudDrive.Application.Services
                 OrginalName = fileDto.OrginalName,
                 StorageKey = fileDto.StorageKey,
                 MimeType = fileDto.MimeType,
-                Extension = fileDto.Extension
+                Extension = fileDto.Extension,
+                UpdatedAt = DateTime.UtcNow
             };
             var updatedFile = await _fileRepo.UpdateAsync(file, token);
             if (updatedFile is null)

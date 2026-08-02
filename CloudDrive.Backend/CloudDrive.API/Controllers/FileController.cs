@@ -19,14 +19,14 @@ namespace CloudDrive.API.Controllers
             _repo = repo;
         }
 
-        [HttpGet("all")]
-        public async Task<ActionResult<FilesInfo>> GetFile(CancellationToken token)
+        [HttpGet]
+        public async Task<ActionResult<FilesInfo>> GetFile(CancellationToken token, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
         {
-            return Ok(await _repo.GetAllAsync(token));
+            return Ok(await _repo.GetAllAsync(page, pageSize, token));
         }
 
-        [HttpGet]
-        public async Task<ActionResult<FilesInfo>> GetFile([FromQuery] Guid id, CancellationToken token)
+        [HttpGet("{id:guid}")]
+        public async Task<ActionResult<FilesInfo>> GetFileById(Guid id, CancellationToken token)
         {
             var file = await _repo.GetByIdAsync(id, token);
 

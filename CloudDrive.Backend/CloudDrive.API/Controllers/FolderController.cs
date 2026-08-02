@@ -1,0 +1,83 @@
+using CloudDrive.Application.DTOs.FolderDTOs;
+using CloudDrive.Application.Interfaces;
+using CloudDrive.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Mvc;
+
+namespace CloudDrive.API.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class FolderController : ControllerBase
+    {
+        private readonly IFolderRepository _repo;
+        private readonly IFolderService _service;
+
+        public FolderController(IFolderRepository repo, IFolderService service)
+        {
+            _repo = repo;
+            _service = service;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> GetAll(CancellationToken token, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
+        {
+            return Ok(await _repo.GetAllAsync(page, pageSize, token));
+        }
+
+        [HttpGet("{id:guid}")]
+        public async Task<ActionResult> GetById(Guid id, CancellationToken token)
+        {
+            var folder = await _repo.GetByIdAsync(id, token);
+            if (folder is null)
+                return NotFound();
+            return Ok(folder);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> CreateFolder([FromBody] AddFolderDto folderDto, CancellationToken token)
+        {
+            try
+            {
+                var folder = await _service.AddFolderAsync(folderDto, token);
+                return CreatedAtAction(
+                    nameof(GetById),
+                    new { id = folder.Id },
+                    folder
+                );
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPut]
+        public async Task<ActionResult> UpdateFolder([FromBody] UpdateFolderDto folderDto, CancellationToken token)
+        {
+            try
+            {
+                var folder = await _service.UpdateFolderAsync(folderDto, token);
+                return NoContent();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+
+        }
+
+        [HttpDelete]
+        public async Task<ActionResult> DeleteById(Guid id, CancellationToken token)
+        {
+            try
+            {
+                await _service.DeleteFolderAsync(id, token);
+                return NoContent();
+            }
+            catch (Exception e)
+            {
+                return NotFound(e.Message);
+            }
+        }
+    }
+}

@@ -17,6 +17,7 @@ builder.Services.AddScoped<IFileRepository, FileRepository>();
 builder.Services.AddScoped<IFolderRepository, FolderRepository>();
 
 builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<IFolderService, FolderService>();
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
