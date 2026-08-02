@@ -5,5 +5,4 @@ public class UpdateFileDto
     public required string StorageKey { get; set; }
     public required string MimeType { get; set; }
     public required string Extension { get; set; }
-    public DateTime UpdateAt { get; set; } = DateTime.UtcNow;
 }
