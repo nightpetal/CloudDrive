@@ -18,8 +18,11 @@ builder.Services.AddScoped<IFolderRepository, FolderRepository>();
 
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IFolderService, FolderService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddOpenApi("v1",
+    options => { options.AddDocumentTransformer<BearerSecuritySchemeTransformer>(); });
 
 var app = builder.Build();
 
@@ -27,7 +30,16 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.MapScalarApiReference(options =>
+    {
+        options.Title = "CloudDrive API";
+        options.Theme = ScalarTheme.BluePlanet;
+
+        options.AddPreferredSecuritySchemes("Bearer").AddHttpAuthentication("Bearer", auth =>
+        {
+            auth.Token = "JWT Token Field";
+        }).EnablePersistentAuthentication();
+    });
 }
 
 app.UseHttpsRedirection();

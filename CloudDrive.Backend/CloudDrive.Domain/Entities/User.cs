@@ -4,6 +4,7 @@ namespace CloudDrive.Domain.Entities
     {
         public Guid Id { get; set; }
         public required string Email { get; set; }
+        public required string Role { get; set; }
         public required string Username { get; set; }
         public required string PasswordHash { get; set; }
         public int StorageLimitBytes { get; set; }

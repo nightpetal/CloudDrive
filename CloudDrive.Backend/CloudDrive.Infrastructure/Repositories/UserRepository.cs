@@ -38,6 +38,11 @@ namespace CloudDrive.Infrastructure.Repositories
             return await _context.Users.ToListAsync(token);
         }
 
+        public async Task<User?> GetByEmailAsync(string email, CancellationToken token)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email, token);
+        }
+
         public async Task<User?> GetByIdAsync(Guid userId, CancellationToken token)
         {
             return await _context.Users.FindAsync(userId);
