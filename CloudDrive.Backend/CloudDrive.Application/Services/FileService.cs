@@ -13,13 +13,13 @@ namespace CloudDrive.Application.Services
             _fileRepo = fileRepo;
         }
 
-        public async Task<FilesInfo> AddFileAsync(AddFileDto fileDto, CancellationToken token)
+        public async Task<FilesInfo> AddFileAsync(Guid userId, AddFileDto fileDto, CancellationToken token)
         {
             if (fileDto is null)
                 throw new InvalidDataException("Dto is null");
             var file = new FilesInfo()
             {
-                OwnerId = fileDto.OwnerId,
+                OwnerId = userId,
                 FolderId = fileDto.FolderId,
                 Extension = fileDto.Extension,
                 MimeType = fileDto.MimeType,

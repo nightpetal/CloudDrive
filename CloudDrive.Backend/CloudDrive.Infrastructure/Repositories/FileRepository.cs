@@ -31,18 +31,19 @@ namespace CloudDrive.Infrastructure.Repositories
             return true;
         }
 
-        public async Task<IEnumerable<FilesInfo>> GetAllAsync(int page, int pageSize, CancellationToken token)
+        public async Task<IEnumerable<FilesInfo>> GetAllAsync(Guid userId, int page, int pageSize, CancellationToken token)
         {
             return await _context.FilesInfos
+            .Where(f => f.OwnerId == userId)
             .OrderBy(f => f.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(token);
         }
 
-        public async Task<FilesInfo?> GetByIdAsync(Guid fileId, CancellationToken token)
+        public async Task<FilesInfo?> GetByIdAsync(Guid userId, Guid fileId, CancellationToken token)
         {
-            return await _context.FilesInfos.FindAsync(fileId);
+            return await _context.FilesInfos.FirstOrDefaultAsync(f => f.Id == fileId && f.OwnerId == userId, token);
         }
 
         public async Task<FilesInfo?> UpdateAsync(FilesInfo filesInfo, CancellationToken token)

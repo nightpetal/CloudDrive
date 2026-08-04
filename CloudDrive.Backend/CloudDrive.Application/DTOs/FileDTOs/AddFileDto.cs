@@ -1,6 +1,5 @@
 public class AddFileDto
 {
-    public Guid OwnerId { get; set; }
     public Guid? FolderId { get; set; }
     public int SizeBytes { get; set; }
     public required string OrginalName { get; set; }

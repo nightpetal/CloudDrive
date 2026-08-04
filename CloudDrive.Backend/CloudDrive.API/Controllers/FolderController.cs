@@ -1,12 +1,15 @@
+using CloudDrive.API.Extensions;
 using CloudDrive.Application.DTOs.FolderDTOs;
 using CloudDrive.Application.Interfaces;
 using CloudDrive.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CloudDrive.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    // [Authorize]
     public class FolderController : ControllerBase
     {
         private readonly IFolderRepository _repo;
@@ -21,12 +24,14 @@ namespace CloudDrive.API.Controllers
         [HttpGet]
         public async Task<ActionResult> GetAll(CancellationToken token, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
         {
+            var userId = User.GetUserId();
             return Ok(await _repo.GetAllAsync(page, pageSize, token));
         }
 
         [HttpGet("{id:guid}")]
         public async Task<ActionResult> GetById(Guid id, CancellationToken token)
         {
+            var userId = User.GetUserId();
             var folder = await _repo.GetByIdAsync(id, token);
             if (folder is null)
                 return NotFound();

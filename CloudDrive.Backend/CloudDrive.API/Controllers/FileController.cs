@@ -1,12 +1,15 @@
+using CloudDrive.API.Extensions;
 using CloudDrive.Application.Interfaces;
 using CloudDrive.Application.Interfaces.Services;
 using CloudDrive.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CloudDrive.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
 
     public class FileController : ControllerBase
     {
@@ -22,13 +25,15 @@ namespace CloudDrive.API.Controllers
         [HttpGet]
         public async Task<ActionResult<FilesInfo>> GetFile(CancellationToken token, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
         {
-            return Ok(await _repo.GetAllAsync(page, pageSize, token));
+            var userId = User.GetUserId();
+            return Ok(await _repo.GetAllAsync(userId, page, pageSize, token));
         }
 
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<FilesInfo>> GetFileById(Guid id, CancellationToken token)
         {
-            var file = await _repo.GetByIdAsync(id, token);
+            var userId = User.GetUserId();
+            var file = await _repo.GetByIdAsync(userId, id, token);
 
             if (file == null)
                 return NotFound();
@@ -39,7 +44,8 @@ namespace CloudDrive.API.Controllers
         [HttpPost]
         public async Task<ActionResult<FilesInfo>> AddFile([FromBody] AddFileDto addFile, CancellationToken token)
         {
-            var filesInfo = await _service.AddFileAsync(addFile, token);
+            var userId = User.GetUserId();
+            var filesInfo = await _service.AddFileAsync(userId, addFile, token);
             return CreatedAtAction(
                 nameof(GetFile),
                 new { id = filesInfo.Id },
