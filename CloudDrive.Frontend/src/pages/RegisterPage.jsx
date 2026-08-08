@@ -1,22 +1,38 @@
 import { useState } from "react";
 import SetTitle from "../hooks/SetTitle";
 import Loading from "../components/Loading";
+import { registerApi } from "../services/authAPI";
+import { useNavigate } from "react-router-dom";
 
 export default function RegisterPage() {
   SetTitle("Register");
 
+  const navigator = useNavigate();
   const [loading, setLoading] = useState(false);
-
   const [formData, setFormData] = useState({
-    fullname: "",
+    username: "",
     email: "",
     password: "",
   });
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    console.log(formData);
-    alert("Registered");
+    try {
+      setLoading(true);
+
+      const response = await registerApi(formData);
+
+      console.log(response);
+      alert("Register Successful");
+
+      localStorage.setItem("CloudDrive Token", response.token);
+
+      navigator("/");
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   function handleChange(e) {
@@ -37,13 +53,13 @@ export default function RegisterPage() {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label className="form-label">Full Name</label>
+            <label className="form-label">User Name</label>
             <input
               type="text"
-              name="fullname"
+              name="username"
               className="form-control"
               placeholder="Enter full name"
-              value={formData.fullname}
+              value={formData.username}
               onChange={handleChange}
               required
             />

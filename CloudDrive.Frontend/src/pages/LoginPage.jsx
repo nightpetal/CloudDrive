@@ -1,20 +1,35 @@
 import { useState } from "react";
 import SetTitle from "../hooks/SetTitle";
 import Loading from "../components/Loading";
+import { loginApi } from "../services/authAPI";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
   SetTitle("Login");
 
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    console.log(formData);
-    alert("Submitted");
+    try {
+      setLoading(true);
+
+      const response = await loginApi(formData);
+
+      console.log(response);
+      alert("Login Successful");
+      localStorage.setItem("CloudDrive Token", response.token);
+      navigate("/");
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   function handleChange(e) {

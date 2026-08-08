@@ -1,11 +1,14 @@
+using CloudDrive.API.Extensions;
 using CloudDrive.Application.DTOs.UserDTOs;
 using CloudDrive.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CloudDrive.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [AllowAnonymous]
     public class AuthController : ControllerBase
     {
 
@@ -22,7 +25,7 @@ namespace CloudDrive.API.Controllers
             try
             {
                 var jwtToken = await _auth.Login(login, token);
-                return Ok(jwtToken);
+                return Ok(new { token = jwtToken });
             }
             catch (System.Exception e)
             {
@@ -36,7 +39,7 @@ namespace CloudDrive.API.Controllers
             try
             {
                 var jwtToken = await _auth.Register(register, token);
-                return Ok(jwtToken);
+                return Ok(new { token = jwtToken });
             }
             catch (System.Exception e)
             {
