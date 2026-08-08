@@ -21,34 +21,35 @@ namespace CloudDrive.Infrastructure.Repositories
             return folder;
         }
 
-        public async Task<bool> DeleteByIdAsync(Guid folderId, CancellationToken token)
+        public async Task<bool> DeleteByIdAsync(Guid userId, Guid folderId, CancellationToken token)
         {
             var existingFolder = await _context.Folders.FindAsync(folderId);
-            if (existingFolder is null)
+            if (existingFolder is null || existingFolder.OwnerId != userId)
                 return false;
             _context.Folders.Remove(existingFolder);
             await _context.SaveChangesAsync(token);
             return true;
         }
 
-        public async Task<IEnumerable<Folder>> GetAllAsync(int page, int pageSize, CancellationToken token)
+        public async Task<IEnumerable<Folder>> GetAllAsync(Guid userId, int page, int pageSize, CancellationToken token)
         {
             return await _context.Folders
+            .Where(f => f.OwnerId == userId)
             .OrderBy(f => f.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(token);
         }
 
-        public async Task<Folder?> GetByIdAsync(Guid folderId, CancellationToken token)
+        public async Task<Folder?> GetByIdAsync(Guid userId, Guid folderId, CancellationToken token)
         {
-            return await _context.Folders.FindAsync(folderId);
+            return await _context.Folders.FirstOrDefaultAsync(f => f.OwnerId == userId && f.Id == folderId);
         }
 
-        public async Task<Folder?> UpdateAsync(Folder folder, CancellationToken token)
+        public async Task<Folder?> UpdateAsync(Guid userId, Folder folder, CancellationToken token)
         {
             var existingFolder = await _context.Folders.FindAsync(folder.Id);
-            if (existingFolder is null)
+            if (existingFolder is null || existingFolder.OwnerId != userId)
                 return null;
             existingFolder.Name = folder.Name;
             existingFolder.DeletedAt = folder.DeletedAt;

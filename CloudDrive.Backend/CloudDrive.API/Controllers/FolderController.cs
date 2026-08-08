@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace CloudDrive.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    // [Authorize]
+    [Route("api/[controller]s")]
+    [Authorize]
     public class FolderController : ControllerBase
     {
         private readonly IFolderRepository _repo;
@@ -25,14 +25,14 @@ namespace CloudDrive.API.Controllers
         public async Task<ActionResult> GetAll(CancellationToken token, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
         {
             var userId = User.GetUserId();
-            return Ok(await _repo.GetAllAsync(page, pageSize, token));
+            return Ok(await _repo.GetAllAsync(userId, page, pageSize, token));
         }
 
         [HttpGet("{id:guid}")]
         public async Task<ActionResult> GetById(Guid id, CancellationToken token)
         {
             var userId = User.GetUserId();
-            var folder = await _repo.GetByIdAsync(id, token);
+            var folder = await _repo.GetByIdAsync(userId, id, token);
             if (folder is null)
                 return NotFound();
             return Ok(folder);
@@ -43,7 +43,8 @@ namespace CloudDrive.API.Controllers
         {
             try
             {
-                var folder = await _service.AddFolderAsync(folderDto, token);
+                var userId = User.GetUserId();
+                var folder = await _service.AddFolderAsync(userId, folderDto, token);
                 return CreatedAtAction(
                     nameof(GetById),
                     new { id = folder.Id },
@@ -61,7 +62,8 @@ namespace CloudDrive.API.Controllers
         {
             try
             {
-                var folder = await _service.UpdateFolderAsync(folderDto, token);
+                var userId = User.GetUserId();
+                var folder = await _service.UpdateFolderAsync(userId, folderDto, token);
                 return NoContent();
             }
             catch (Exception e)
@@ -76,7 +78,8 @@ namespace CloudDrive.API.Controllers
         {
             try
             {
-                await _service.DeleteFolderAsync(id, token);
+                var userId = User.GetUserId();
+                await _service.DeleteFolderAsync(userId, id, token);
                 return NoContent();
             }
             catch (Exception e)

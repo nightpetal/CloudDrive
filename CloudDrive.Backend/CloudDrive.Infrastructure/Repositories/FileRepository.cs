@@ -21,10 +21,10 @@ namespace CloudDrive.Infrastructure.Repositories
             return filesInfo;
         }
 
-        public async Task<bool> DeleteAsync(Guid fileId, CancellationToken token)
+        public async Task<bool> DeleteAsync(Guid userId, Guid fileId, CancellationToken token)
         {
             var existingFile = await _context.FilesInfos.FindAsync(fileId);
-            if (existingFile is null)
+            if (existingFile is null || existingFile.OwnerId != userId)
                 return false;
             _context.FilesInfos.Remove(existingFile);
             await _context.SaveChangesAsync(token);
@@ -46,10 +46,10 @@ namespace CloudDrive.Infrastructure.Repositories
             return await _context.FilesInfos.FirstOrDefaultAsync(f => f.Id == fileId && f.OwnerId == userId, token);
         }
 
-        public async Task<FilesInfo?> UpdateAsync(FilesInfo filesInfo, CancellationToken token)
+        public async Task<FilesInfo?> UpdateAsync(Guid userId, FilesInfo filesInfo, CancellationToken token)
         {
             var existingFile = await _context.FilesInfos.FindAsync(filesInfo.Id);
-            if (existingFile is null)
+            if (existingFile is null || existingFile.OwnerId != userId)
                 return null;
             existingFile.OrginalName = filesInfo.OrginalName;
             existingFile.Extension = filesInfo.Extension;

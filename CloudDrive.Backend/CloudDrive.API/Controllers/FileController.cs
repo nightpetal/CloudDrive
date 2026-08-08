@@ -2,13 +2,14 @@ using CloudDrive.API.Extensions;
 using CloudDrive.Application.Interfaces;
 using CloudDrive.Application.Interfaces.Services;
 using CloudDrive.Domain.Entities;
+using CloudDrive.Infrastructure.Mapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CloudDrive.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[controller]s")]
     [Authorize]
 
     public class FileController : ControllerBase
@@ -26,7 +27,11 @@ namespace CloudDrive.API.Controllers
         public async Task<ActionResult<FilesInfo>> GetFile(CancellationToken token, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
         {
             var userId = User.GetUserId();
-            return Ok(await _repo.GetAllAsync(userId, page, pageSize, token));
+            var files = await _repo.GetAllAsync(userId, page, pageSize, token);
+            var dto = files.Select(
+                file => file.MapFile()
+                ).ToList();
+            return Ok(dto);
         }
 
         [HttpGet("{id:guid}")]
@@ -38,7 +43,7 @@ namespace CloudDrive.API.Controllers
             if (file == null)
                 return NotFound();
 
-            return Ok(file);
+            return Ok(file.MapFile());
         }
 
         [HttpPost]
@@ -58,7 +63,8 @@ namespace CloudDrive.API.Controllers
         {
             try
             {
-                await _service.DeleteFileAsync(id, token);
+                var userId = User.GetUserId();
+                await _service.DeleteFileAsync(userId, id, token);
                 return NoContent();
             }
             catch (Exception e)

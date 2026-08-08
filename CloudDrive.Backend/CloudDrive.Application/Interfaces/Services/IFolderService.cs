@@ -5,8 +5,8 @@ namespace CloudDrive.Application.Interfaces.Services
 {
     public interface IFolderService
     {
-        Task<Folder> AddFolderAsync(AddFolderDto folderDto, CancellationToken token);
-        Task DeleteFolderAsync(Guid folderId, CancellationToken token);
-        Task<UpdateFolderDto> UpdateFolderAsync(UpdateFolderDto folderDto, CancellationToken token);
+        Task<Folder> AddFolderAsync(Guid userId, AddFolderDto folderDto, CancellationToken token);
+        Task DeleteFolderAsync(Guid userId, Guid folderId, CancellationToken token);
+        Task<UpdateFolderDto> UpdateFolderAsync(Guid userId, UpdateFolderDto folderDto, CancellationToken token);
     }
 }
