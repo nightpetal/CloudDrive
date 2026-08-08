@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:5214"; // Change to your API URL
+const BASE_URL = "http://localhost:5214";
 
 export async function apiCall(route, method = "GET", body = null) {
   const options = {
@@ -7,7 +7,10 @@ export async function apiCall(route, method = "GET", body = null) {
       "Content-Type": "application/json",
     },
   };
-
+  const token = localStorage.getItem("CloudDrive Token");
+  if (token) {
+    options.headers.Authorization = `Bearer ${token}`;
+  }
   if (body) {
     options.body = JSON.stringify(body);
   }

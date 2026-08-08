@@ -1,96 +1,26 @@
-import React, { useState } from "react";
-import {
-  FaFolder,
-  FaFilePdf,
-  FaFileWord,
-  FaFileImage,
-  FaFileAlt,
-  FaUpload,
-  FaPlus,
-  FaSearch,
-  FaCloud,
-} from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+import { FaUpload, FaSearch, FaCloud } from "react-icons/fa";
+import { apiCall } from "../services/apiCall";
+import UserFolder from "../components/UserFolder";
+import UserFile from "../components/UserFile";
+import Sidebar from "../components/Sidebar";
 
 export default function DrivePage() {
-  const [folders] = useState([
-    { id: 1, name: "Documents", files: 14 },
-    { id: 2, name: "Photos", files: 92 },
-    { id: 3, name: "Projects", files: 7 },
-    { id: 4, name: "Downloads", files: 24 },
-  ]);
+  const [folders, setFolders] = useState([]);
 
-  const [files] = useState([
-    {
-      id: 1,
-      name: "Resume.pdf",
-      type: "pdf",
-      size: "1.2 MB",
-      modified: "Today",
-    },
-    {
-      id: 2,
-      name: "Vacation.jpg",
-      type: "image",
-      size: "3.4 MB",
-      modified: "Yesterday",
-    },
-    {
-      id: 3,
-      name: "Report.docx",
-      type: "word",
-      size: "820 KB",
-      modified: "2 days ago",
-    },
-  ]);
-
-  const icon = (type) => {
-    switch (type) {
-      case "pdf":
-        return <FaFilePdf className="text-danger fs-4" />;
-      case "image":
-        return <FaFileImage className="text-success fs-4" />;
-      case "word":
-        return <FaFileWord className="text-primary fs-4" />;
-      default:
-        return <FaFileAlt className="text-secondary fs-4" />;
-    }
-  };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   return (
     <div className="flex-grow-1 d-flex justify-content-center align-items-center">
       <div className="container-fluid">
         <div className="row">
-          <div className="col-lg-2 bg-white border-end p-4">
-            <h4 className="fw-bold mb-5">
-              <FaCloud className="text-primary me-2" />
-              CloudDrive
-            </h4>
+          {/* Sidebar */}
+          <Sidebar />
 
-            <button className="btn btn-primary rounded-pill w-100 mb-4">
-              <FaPlus className="me-2" />
-              New
-            </button>
-
-            <div className="list-group border-0">
-              <button className="list-group-item list-group-item-action border-0 rounded active">
-                My Drive
-              </button>
-
-              <button className="list-group-item list-group-item-action border-0 rounded">
-                Shared
-              </button>
-
-              <button className="list-group-item list-group-item-action border-0 rounded">
-                Recent
-              </button>
-
-              <button className="list-group-item list-group-item-action border-0 rounded">
-                Trash
-              </button>
-            </div>
-          </div>
-
+          {/* Main content */}
           <div className="col-lg-10 p-4">
+            {/* Search + Upload */}
             <div className="d-flex justify-content-between align-items-center mb-4">
               <div className="input-group w-50">
                 <span className="input-group-text bg-white border-end-0">
@@ -110,63 +40,11 @@ export default function DrivePage() {
               </label>
             </div>
 
-            <h5 className="fw-bold mb-3">Folders</h5>
+            {/* Folders */}
+            <UserFolder />
 
-            <div className="row g-3 mb-5">
-              {folders.map((folder) => (
-                <div className="col-md-6 col-xl-3" key={folder.id}>
-                  <div className="card border-0 shadow-sm rounded-4">
-                    <div className="card-body d-flex align-items-center">
-                      <FaFolder size={45} className="text-warning me-3" />
-
-                      <div>
-                        <h6 className="mb-1 fw-bold">{folder.name}</h6>
-
-                        <small className="text-muted">
-                          {folder.files} files
-                        </small>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="card border-0 shadow-sm rounded-4">
-              <div className="card-header bg-white border-0 py-3">
-                <h5 className="mb-0 fw-bold">Recent Files</h5>
-              </div>
-
-              <div className="table-responsive">
-                <table className="table align-middle mb-0">
-                  <thead className="table-light">
-                    <tr>
-                      <th>Name</th>
-                      <th>Size</th>
-                      <th>Modified</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {files.map((file) => (
-                      <tr key={file.id}>
-                        <td>
-                          <div className="d-flex align-items-center">
-                            <div className="me-3">{icon(file.type)}</div>
-
-                            {file.name}
-                          </div>
-                        </td>
-
-                        <td>{file.size}</td>
-
-                        <td>{file.modified}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            {/* Recent Files */}
+            <UserFile />
           </div>
         </div>
       </div>

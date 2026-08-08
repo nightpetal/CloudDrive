@@ -23,8 +23,8 @@ export default function Navbar() {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto align-items-lg-center gap-lg-3">
             <li className="nav-item">
-              <NavLink end className={navClass} to="/">
-                Home
+              <NavLink end className={navClass} to="/drive">
+                Drive
               </NavLink>
             </li>
 
