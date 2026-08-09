@@ -16,7 +16,9 @@ export async function apiCall(route, method = "GET", body = null) {
   }
 
   const response = await fetch(`${BASE_URL}${route}`, options);
-
+  if (response.status === 204) {
+    return null;
+  }
   const data = await response.json();
 
   if (!response.ok) {

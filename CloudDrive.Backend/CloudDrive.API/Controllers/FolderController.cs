@@ -73,8 +73,8 @@ namespace CloudDrive.API.Controllers
 
         }
 
-        [HttpDelete]
-        public async Task<ActionResult> DeleteById(Guid id, CancellationToken token)
+        [HttpDelete("{id:guid}")]
+        public async Task<ActionResult> DeleteById([FromRoute] Guid id, CancellationToken token)
         {
             try
             {

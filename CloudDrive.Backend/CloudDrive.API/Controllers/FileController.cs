@@ -1,4 +1,6 @@
 using CloudDrive.API.Extensions;
+using CloudDrive.Application.DTOs.Request;
+using CloudDrive.Application.DTOs.Response;
 using CloudDrive.Application.Interfaces;
 using CloudDrive.Application.Interfaces.Services;
 using CloudDrive.Domain.Entities;
@@ -24,13 +26,22 @@ namespace CloudDrive.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<FilesInfo>> GetFile(CancellationToken token, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
+        public async Task<ActionResult<PagedResult<FilesInfo>>> GetFiles(CancellationToken token, [FromQuery] Guid? folderId = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 5)
         {
             var userId = User.GetUserId();
-            var files = await _repo.GetAllAsync(userId, page, pageSize, token);
-            var dto = files.Select(
-                file => file.MapFile()
-                ).ToList();
+
+            var files = await _repo.GetAllAsync(userId, folderId, page, pageSize, token);
+
+            var dto = new PagedResult<FileRequest>
+            {
+                Data = files.Data
+                .Select(file => file.MapFile())
+                .ToList(),
+                Page = files.Page,
+                PageSize = files.PageSize,
+                HasNextPage = files.HasNextPage
+            };
+
             return Ok(dto);
         }
 
@@ -52,14 +63,14 @@ namespace CloudDrive.API.Controllers
             var userId = User.GetUserId();
             var filesInfo = await _service.AddFileAsync(userId, addFile, token);
             return CreatedAtAction(
-                nameof(GetFile),
+                nameof(GetFiles),
                 new { id = filesInfo.Id },
                 filesInfo
             );
         }
 
-        [HttpDelete]
-        public async Task<ActionResult<FilesInfo>> DeleteFile([FromQuery] Guid id, CancellationToken token)
+        [HttpDelete("{id:guid}")]
+        public async Task<ActionResult<FilesInfo>> DeleteFile([FromRoute] Guid id, CancellationToken token)
         {
             try
             {

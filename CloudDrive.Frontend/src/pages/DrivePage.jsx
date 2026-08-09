@@ -10,6 +10,8 @@ export default function DrivePage() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [selectedFolder, setSelectedFolder] = useState(null);
 
   return (
     <div className="flex-grow-1 d-flex justify-content-center align-items-center">
@@ -36,15 +38,52 @@ export default function DrivePage() {
               <label className="btn btn-primary">
                 <FaUpload className="me-2" />
                 Upload
-                <input hidden type="file" multiple />
+                <input
+                  hidden
+                  type="file"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+
+                    if (!file) return;
+
+                    const metadata = {
+                      folderId: selectedFolder?.id ?? null,
+                      sizeBytes: file.size,
+                      orginalName: file.name,
+                      storageKey: "",
+                      mimeType: file.type,
+                      extension: file.name.includes(".")
+                        ? `.${file.name.split(".").pop()}`
+                        : "",
+                    };
+
+                    try {
+                      const result = await apiCall(
+                        "/api/Files",
+                        "POST",
+                        metadata,
+                      );
+                      console.log("File metadata saved:", result);
+                      setRefreshKey((prev) => prev + 1);
+                    } catch (error) {
+                      console.error("Upload failed:", error);
+                    }
+                    e.target.value = "";
+                  }}
+                />
               </label>
             </div>
 
             {/* Folders */}
-            <UserFolder />
+            <UserFolder
+              refreshKey={refreshKey}
+              onFolderClick={(folder) => {
+                setSelectedFolder(folder);
+              }}
+            />
 
             {/* Recent Files */}
-            <UserFile />
+            <UserFile refreshKey={refreshKey} folderId={selectedFolder?.id} />
           </div>
         </div>
       </div>

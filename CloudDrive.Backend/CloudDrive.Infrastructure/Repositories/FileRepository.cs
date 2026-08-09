@@ -1,3 +1,4 @@
+using CloudDrive.Application.DTOs.Response;
 using CloudDrive.Application.Interfaces;
 using CloudDrive.Domain.Entities;
 using CloudDrive.Infrastructure.Data;
@@ -31,14 +32,36 @@ namespace CloudDrive.Infrastructure.Repositories
             return true;
         }
 
-        public async Task<IEnumerable<FilesInfo>> GetAllAsync(Guid userId, int page, int pageSize, CancellationToken token)
+        public async Task<PagedResult<FilesInfo>> GetAllAsync(
+            Guid userId,
+            Guid? folderId,
+            int page,
+            int pageSize,
+            CancellationToken token)
         {
-            return await _context.FilesInfos
-            .Where(f => f.OwnerId == userId)
-            .OrderBy(f => f.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(token);
+            var query = _context.FilesInfos
+                .Where(f => f.OwnerId == userId);
+
+            if (folderId.HasValue)
+            {
+                query = query.Where(f => f.FolderId == folderId.Value);
+            }
+
+            var files = await query
+                .OrderBy(f => f.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize + 1)
+                .ToListAsync(token);
+
+            var hasNextPage = files.Count > pageSize;
+
+            return new PagedResult<FilesInfo>
+            {
+                Data = files.Take(pageSize).ToList(),
+                Page = page,
+                PageSize = pageSize,
+                HasNextPage = hasNextPage
+            };
         }
 
         public async Task<FilesInfo?> GetByIdAsync(Guid userId, Guid fileId, CancellationToken token)
