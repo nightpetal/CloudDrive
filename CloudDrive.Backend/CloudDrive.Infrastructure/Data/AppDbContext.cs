@@ -12,6 +12,7 @@ namespace CloudDrive.Infrastructure.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Folder> Folders { get; set; }
         public DbSet<FilesInfo> FilesInfos { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
     }
 }
 

@@ -1,4 +1,3 @@
-using CloudDrive.API.Extensions;
 using CloudDrive.Application.DTOs.UserDTOs;
 using CloudDrive.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -11,7 +10,6 @@ namespace CloudDrive.API.Controllers
     [AllowAnonymous]
     public class AuthController : ControllerBase
     {
-
         private readonly IAuthService _auth;
 
         public AuthController(IAuthService auth)
@@ -20,28 +18,76 @@ namespace CloudDrive.API.Controllers
         }
 
         [HttpPost("/login")]
-        public async Task<ActionResult> Login([FromBody] Login login, CancellationToken token)
+        public async Task<ActionResult<AuthResponse>> Login([FromBody] Login login, CancellationToken cancellationToken)
         {
             try
             {
-                var jwtToken = await _auth.Login(login, token);
-                return Ok(new { token = jwtToken });
+                var response = await _auth.Login(
+                    login,
+                    cancellationToken);
+
+                return Ok(response);
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 return BadRequest(e.Message);
             }
         }
 
         [HttpPost("/register")]
-        public async Task<ActionResult> Register([FromBody] Register register, CancellationToken token)
+        public async Task<ActionResult<AuthResponse>> Register([FromBody] Register register, CancellationToken cancellationToken)
         {
             try
             {
-                var jwtToken = await _auth.Register(register, token);
-                return Ok(new { token = jwtToken });
+                var response = await _auth.Register(
+                    register,
+                    cancellationToken);
+
+                return Ok(response);
             }
-            catch (System.Exception e)
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPost("refresh")]
+        public async Task<ActionResult<AuthResponse>> Refresh(
+            [FromBody] string refreshToken,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var response = await _auth.RefreshToken(
+                    refreshToken,
+                    cancellationToken);
+
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPost("revoke")]
+        public async Task<IActionResult> Revoke(
+            [FromBody] string refreshToken,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _auth.RevokeRefreshToken(
+                    refreshToken,
+                    cancellationToken);
+
+                return NoContent();
+            }
+            catch (Exception e)
             {
                 return BadRequest(e.Message);
             }

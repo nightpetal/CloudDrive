@@ -5,7 +5,21 @@ namespace CloudDrive.Application.Interfaces.Services
     public interface IAuthService
     {
         string CreateToken(Guid id, string email, string role);
-        Task<string> Login(Login login, CancellationToken token);
-        Task<string> Register(Register register, CancellationToken token);
+
+        Task<AuthResponse> Register(
+            Register register,
+            CancellationToken cancellationToken);
+
+        Task<AuthResponse> Login(
+            Login login,
+            CancellationToken cancellationToken);
+
+        Task<AuthResponse> RefreshToken(
+            string refreshToken,
+            CancellationToken cancellationToken);
+
+        Task RevokeRefreshToken(
+            string refreshToken,
+            CancellationToken cancellationToken);
     }
 }
