@@ -1,0 +1,16 @@
+# Please refer https://aka.ms/HTTPSinContainer on how to setup an https developer certificate for your ASP.NET Core service.
+
+services:
+  clouddriveapi:
+    image: clouddriveapi
+    build:
+      context: .
+      dockerfile: CloudDrive.Backend/CloudDrive.API/Dockerfile
+      args:
+        - configuration=Debug
+    ports:
+      - 5214:5214
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ~/.vsdbg:/remote_debugger:rw
