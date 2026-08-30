@@ -23,10 +23,8 @@ export default function RegisterPage() {
       const response = await registerApi(formData);
 
       console.log(response);
-      alert("Register Successful");
-
-      localStorage.setItem("CloudDrive Token", response.token);
-
+      localStorage.setItem("CloudDrive Token", response.accessToken);
+      localStorage.setItem("CloudDrive RefreshToken", response.refreshToken);
       navigator("/");
     } catch (error) {
       alert(error.message);

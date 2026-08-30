@@ -5,6 +5,9 @@ export default function ProfileCard({ user }) {
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState(user);
 
+  // Use username or displayName, fallback to email
+  const displayName = user.username || user.name || user.email || "User";
+
   const storagePercentage =
     user.storageLimitBytes > 0
       ? (user.storageUsedBytes / user.storageLimitBytes) * 100
@@ -41,16 +44,16 @@ export default function ProfileCard({ user }) {
               className="rounded-circle bg-primary text-white d-flex justify-content-center align-items-center me-3"
               style={{ width: "60px", height: "60px", fontSize: "24px" }}
             >
-              {user.name.charAt(0)}
+              {displayName.charAt(0).toUpperCase()}
             </div>
 
             {editing ? (
               <div>
                 <input
                   type="text"
-                  name="name"
+                  name="username"
                   className="form-control mb-2"
-                  value={formData.name}
+                  value={formData.username || ""}
                   onChange={handleChange}
                 />
 
@@ -58,13 +61,13 @@ export default function ProfileCard({ user }) {
                   type="email"
                   name="email"
                   className="form-control"
-                  value={formData.email}
+                  value={formData.email || ""}
                   onChange={handleChange}
                 />
               </div>
             ) : (
               <div>
-                <h5 className="mb-1 fw-bold">{user.name}</h5>
+                <h5 className="mb-1 fw-bold">{displayName}</h5>
                 <p className="text-muted mb-0">{user.email}</p>
               </div>
             )}
@@ -99,7 +102,8 @@ export default function ProfileCard({ user }) {
           <div className="d-flex justify-content-between mb-2">
             <span className="fw-semibold">Storage Used</span>
             <span className="text-muted">
-              {user.storageUsedBytes} / {user.storageLimitBytes}
+              {(user.storageUsedBytes / 1024 / 1024).toFixed(2)} MB /{" "}
+              {(user.storageLimitBytes / 1024 / 1024).toFixed(2)} MB
             </span>
           </div>
 

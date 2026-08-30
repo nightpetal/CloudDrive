@@ -5,9 +5,11 @@ import {
   FaFileImage,
   FaFileAlt,
   FaTrash,
+  FaDownload,
 } from "react-icons/fa";
 
 import { apiCall } from "../services/apiCall";
+import { downloadFileApi } from "../services/fileAPI";
 
 export default function UserFile({ refreshKey, folderId }) {
   const [files, setFiles] = useState([]);
@@ -17,6 +19,7 @@ export default function UserFile({ refreshKey, folderId }) {
   const [hasNextPage, setHasNextPage] = useState(false);
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [downloadingId, setDownloadingId] = useState(null);
 
   const pageSize = 5;
 
@@ -107,6 +110,31 @@ export default function UserFile({ refreshKey, folderId }) {
     }
   };
 
+  const handleDownload = async (file) => {
+    try {
+      setDownloadingId(file.id);
+      setError("");
+
+      const response = await downloadFileApi(file.id);
+      const blob = await response.blob();
+
+      // Create a temporary URL for the blob
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = file.orginalName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error(err);
+      setError("Unable to download file.");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
   const handlePrevious = () => {
     if (page > 1) {
       setPage((prev) => prev - 1);
@@ -166,9 +194,24 @@ export default function UserFile({ refreshKey, folderId }) {
                     <td className="text-end">
                       <button
                         type="button"
+                        className="btn btn-outline-primary btn-sm me-2"
+                        onClick={() => handleDownload(file)}
+                        disabled={downloadingId === file.id}
+                        title="Download file"
+                      >
+                        <FaDownload className="me-1" />
+
+                        {downloadingId === file.id
+                          ? "Downloading..."
+                          : "Download"}
+                      </button>
+
+                      <button
+                        type="button"
                         className="btn btn-outline-danger btn-sm"
                         onClick={() => handleDelete(file)}
                         disabled={deletingId === file.id}
+                        title="Delete file"
                       >
                         <FaTrash className="me-1" />
 

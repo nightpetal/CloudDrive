@@ -22,10 +22,11 @@ export default function LoginPage() {
       const response = await loginApi(formData);
 
       console.log(response);
-      alert("Login Successful");
-      localStorage.setItem("CloudDrive Token", response.token);
+      localStorage.setItem("CloudDrive Token", response.accessToken);
+      localStorage.setItem("CloudDrive RefreshToken", response.refreshToken);
       navigate("/");
     } catch (error) {
+      alert("failed");
       alert(error.message);
     } finally {
       setLoading(false);

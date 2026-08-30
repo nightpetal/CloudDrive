@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FaUpload, FaSearch, FaCloud } from "react-icons/fa";
-import { apiCall } from "../services/apiCall";
+import { uploadFileApi } from "../services/fileAPI";
 import UserFolder from "../components/UserFolder";
 import UserFile from "../components/UserFile";
 import Sidebar from "../components/Sidebar";
@@ -12,6 +12,7 @@ export default function DrivePage() {
   const [error, setError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedFolder, setSelectedFolder] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   return (
     <div className="flex-grow-1 d-flex justify-content-center align-items-center">
@@ -35,40 +36,35 @@ export default function DrivePage() {
                 />
               </div>
 
-              <label className="btn btn-primary">
+              <label className="btn btn-primary" disabled={uploading}>
                 <FaUpload className="me-2" />
-                Upload
+                {uploading ? "Uploading..." : "Upload"}
                 <input
                   hidden
                   type="file"
+                  disabled={uploading}
                   onChange={async (e) => {
                     const file = e.target.files?.[0];
 
                     if (!file) return;
 
-                    const metadata = {
-                      folderId: selectedFolder?.id ?? null,
-                      sizeBytes: file.size,
-                      orginalName: file.name,
-                      storageKey: "",
-                      mimeType: file.type,
-                      extension: file.name.includes(".")
-                        ? `.${file.name.split(".").pop()}`
-                        : "",
-                    };
-
                     try {
-                      const result = await apiCall(
-                        "/api/Files",
-                        "POST",
-                        metadata,
+                      setUploading(true);
+                      const result = await uploadFileApi(
+                        file,
+                        selectedFolder?.id,
                       );
-                      console.log("File metadata saved:", result);
+                      console.log("File uploaded:", result);
                       setRefreshKey((prev) => prev + 1);
+                      // Show success message
+                      alert(`File "${file.name}" uploaded successfully!`);
                     } catch (error) {
                       console.error("Upload failed:", error);
+                      alert(`Upload failed: ${error.message}`);
+                    } finally {
+                      setUploading(false);
+                      e.target.value = "";
                     }
-                    e.target.value = "";
                   }}
                 />
               </label>
