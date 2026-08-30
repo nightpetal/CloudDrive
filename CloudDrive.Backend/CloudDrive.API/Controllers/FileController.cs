@@ -57,6 +57,27 @@ namespace CloudDrive.API.Controllers
             return Ok(file.MapFile());
         }
 
+        [HttpGet("download/{id:guid}")]
+        public async Task<IActionResult> DownloadFile(Guid id, CancellationToken token)
+        {
+            try
+            {
+                var userId = User.GetUserId();
+                var file = await _repo.GetByIdAsync(userId, id, token);
+
+                if (file == null)
+                    return NotFound(new { message = "File not found" });
+
+                var fileStream = await _service.DownloadFileAsync(file.StorageKey, token);
+
+                return File(fileStream, file.MimeType, file.OrginalName);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [HttpPost]
         public async Task<ActionResult<FilesInfo>> AddFile([FromBody] AddFileDto addFile, CancellationToken token)
         {
@@ -67,6 +88,43 @@ namespace CloudDrive.API.Controllers
                 new { id = filesInfo.Id },
                 filesInfo
             );
+        }
+
+        [HttpPost("upload")]
+        [DisableRequestSizeLimit]
+        public async Task<ActionResult<FilesInfo>> UploadFile(CancellationToken token, [FromQuery] Guid? folderId = null)
+        {
+            var userId = User.GetUserId();
+
+            // Check if file is present in the request
+            if (Request.Form.Files.Count == 0)
+                return BadRequest("No file provided");
+
+            var file = Request.Form.Files[0];
+
+            if (file.Length == 0)
+                return BadRequest("File is empty");
+
+            try
+            {
+                using (var stream = file.OpenReadStream())
+                {
+                    var uploadedFile = await _service.UploadFileAsync(
+                        userId,
+                        file.FileName,
+                        stream,
+                        file.ContentType,
+                        folderId,
+                        token
+                    );
+
+                    return CreatedAtAction(nameof(GetFileById), new { id = uploadedFile.Id }, uploadedFile);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpDelete("{id:guid}")]
