@@ -1,25 +1,30 @@
-import React, { useEffect, useState } from "react";
-import { FaUpload, FaSearch, FaCloud } from "react-icons/fa";
+import React, { useState } from "react";
+import { FaUpload, FaSearch } from "react-icons/fa";
+
 import { uploadFileApi } from "../services/fileAPI";
 import UserFolder from "../components/UserFolder";
 import UserFile from "../components/UserFile";
 import Sidebar from "../components/Sidebar";
 
 export default function DrivePage() {
-  const [folders, setFolders] = useState([]);
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [uploading, setUploading] = useState(false);
+
+  const handleFolderCreated = () => {
+    // Increase refreshKey so UserFolder fetches again
+    setRefreshKey((prev) => prev + 1);
+  };
 
   return (
     <div className="flex-grow-1 d-flex justify-content-center align-items-center">
       <div className="container-fluid">
         <div className="row">
           {/* Sidebar */}
-          <Sidebar />
+          <Sidebar
+            currentFolderId={selectedFolder?.id ?? null}
+            onFolderCreated={handleFolderCreated}
+          />
 
           {/* Main content */}
           <div className="col-lg-10 p-4">
@@ -36,9 +41,17 @@ export default function DrivePage() {
                 />
               </div>
 
-              <label className="btn btn-primary" disabled={uploading}>
+              <label
+                className="btn btn-primary"
+                style={{
+                  pointerEvents: uploading ? "none" : "auto",
+                  opacity: uploading ? 0.7 : 1,
+                }}
+              >
                 <FaUpload className="me-2" />
+
                 {uploading ? "Uploading..." : "Upload"}
+
                 <input
                   hidden
                   type="file"
@@ -50,16 +63,21 @@ export default function DrivePage() {
 
                     try {
                       setUploading(true);
+
                       const result = await uploadFileApi(
                         file,
                         selectedFolder?.id,
                       );
+
                       console.log("File uploaded:", result);
+
+                      // Refresh files
                       setRefreshKey((prev) => prev + 1);
-                      // Show success message
+
                       alert(`File "${file.name}" uploaded successfully!`);
                     } catch (error) {
                       console.error("Upload failed:", error);
+
                       alert(`Upload failed: ${error.message}`);
                     } finally {
                       setUploading(false);
@@ -78,7 +96,7 @@ export default function DrivePage() {
               }}
             />
 
-            {/* Recent Files */}
+            {/* Files */}
             <UserFile refreshKey={refreshKey} folderId={selectedFolder?.id} />
           </div>
         </div>

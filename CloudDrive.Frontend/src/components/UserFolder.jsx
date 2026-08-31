@@ -1,16 +1,11 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaFolder } from "react-icons/fa";
-import { apiCall } from "../services/apiCall";
+import { getFoldersApi } from "../services/folderAPI";
 
 export default function UserFolder({ refreshKey, onFolderClick }) {
   const [folders, setFolders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const [page, setPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(false);
-
-  const pageSize = 5;
 
   useEffect(() => {
     const loadFolders = async () => {
@@ -18,112 +13,79 @@ export default function UserFolder({ refreshKey, onFolderClick }) {
         setLoading(true);
         setError("");
 
-        const data = await apiCall(
-          `/api/Folders?page=${page}&pageSize=${pageSize}`,
-        );
-        setFolders(data.data);
-        setHasNextPage(data.hasNextPage);
+        const data = await getFoldersApi();
+
+        console.log("Folders:", data);
+
+        // If API returns an array
+        if (Array.isArray(data)) {
+          setFolders(data);
+        }
+        // If API returns { folders: [...] }
+        else if (Array.isArray(data.folders)) {
+          setFolders(data.folders);
+        }
+        // If API returns { data: [...] }
+        else if (Array.isArray(data.data)) {
+          setFolders(data.data);
+        }
+        // Anything else
+        else {
+          setFolders([]);
+        }
       } catch (err) {
-        console.error(err);
-        setError("Unable to load folders.");
+        console.error("Failed to fetch folders:", err);
+        setError(err.message || "Failed to fetch folders.");
+        setFolders([]);
       } finally {
         setLoading(false);
       }
     };
 
     loadFolders();
-  }, [refreshKey, page]);
+  }, [refreshKey]);
 
-  // Virtual root folder.
-  const rootFolder = {
-    id: null,
-    name: "Root",
-    parentFolderId: null,
-  };
+  if (loading) {
+    return (
+      <div className="mb-4">
+        <h5 className="fw-bold mb-3">Folders</h5>
+        <p className="text-muted">Loading folders...</p>
+      </div>
+    );
+  }
 
-  const allFolders = [rootFolder, ...folders];
-
-  const handlePrevious = () => {
-    if (page > 1) {
-      setPage((prev) => prev - 1);
-    }
-  };
-
-  const handleNext = () => {
-    if (hasNextPage) {
-      setPage((prev) => prev + 1);
-    }
-  };
+  if (error) {
+    return (
+      <div className="mb-4">
+        <h5 className="fw-bold mb-3">Folders</h5>
+        <div className="alert alert-danger">{error}</div>
+      </div>
+    );
+  }
 
   return (
-    <>
+    <div className="mb-4">
       <h5 className="fw-bold mb-3">Folders</h5>
 
-      {loading && <div className="text-muted mb-4">Loading folders...</div>}
+      {folders.length === 0 ? (
+        <p className="text-muted">No folders yet.</p>
+      ) : (
+        <div className="row g-3">
+          {folders.map((folder) => (
+            <div className="col-md-4 col-xl-3" key={folder.id}>
+              <button
+                type="button"
+                className="btn btn-light border w-100 text-start p-3"
+                onClick={() => onFolderClick(folder)}
+              >
+                <FaFolder className="text-warning me-2" size={20} />
 
-      {error && <div className="alert alert-danger">{error}</div>}
-
-      {!loading && !error && (
-        <>
-          <div className="row g-3 mb-4">
-            {allFolders.map((folder) => (
-              <div className="col-md-6 col-xl-3" key={folder.id ?? "root"}>
-                <button
-                  type="button"
-                  className="card border-0 shadow-sm rounded-4 w-100 text-start p-0 bg-white"
-                  onClick={() => onFolderClick(folder)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <div className="card-body d-flex align-items-center">
-                    <FaFolder
-                      size={45}
-                      className={
-                        folder.id === null
-                          ? "text-primary me-3"
-                          : "text-warning me-3"
-                      }
-                    />
-
-                    <div>
-                      <h6 className="mb-1 fw-bold">{folder.name}</h6>
-
-                      <small className="text-muted">
-                        {folder.id === null ? "All root files" : "Folder"}
-                      </small>
-                    </div>
-                  </div>
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {folders.length === 0 && page === 1 && (
-            <div className="text-muted">No folders found.</div>
-          )}
-
-          <div className="d-flex justify-content-between align-items-center">
-            <button
-              type="button"
-              className="btn btn-outline-secondary"
-              onClick={handlePrevious}
-              disabled={page === 1 || loading}
-            >
-              Previous
-            </button>
-
-            <span className="text-muted">Page {page}</span>
-
-            <button
-              type="button"
-              className="btn btn-outline-primary"
-              onClick={handleNext}
-              disabled={!hasNextPage || loading}
-            >
-              Next
-            </button>
-          </div>
-        </>
+                <span className="fw-semibold">{folder.name}</span>
+              </button>
+            </div>
+          ))}
+        </div>
       )}
-    </>
+    </div>
   );
 }
