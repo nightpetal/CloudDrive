@@ -1,8 +1,17 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
+  const navigate = useNavigate();
+
   const navClass = ({ isActive }) =>
     `nav-link ${isActive ? "active fw-semibold text-white" : "text-white-50"}`;
+
+  const token = localStorage.getItem("CloudDrive Token");
+
+  const handleLogout = () => {
+    localStorage.removeItem("CloudDrive Token");
+    navigate("/login");
+  };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
@@ -22,35 +31,44 @@ export default function Navbar() {
 
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto align-items-lg-center gap-lg-3">
-            <li className="nav-item">
-              <NavLink end className={navClass} to="/drive">
-                Drive
-              </NavLink>
-            </li>
+            {token ? (
+              <>
+                <li className="nav-item">
+                  <NavLink end className={navClass} to="/drive">
+                    Drive
+                  </NavLink>
+                </li>
 
-            <li className="nav-item">
-              <NavLink className={navClass} to="/about">
-                About
-              </NavLink>
-            </li>
+                <li className="nav-item">
+                  <NavLink className={navClass} to="/profile">
+                    Profile
+                  </NavLink>
+                </li>
 
-            <li className="nav-item">
-              <NavLink className={navClass} to="/profile">
-                Profile
-              </NavLink>
-            </li>
+                <li className="nav-item">
+                  <button
+                    onClick={handleLogout}
+                    className="btn btn-outline-light btn-sm"
+                  >
+                    Logout
+                  </button>
+                </li>
+              </>
+            ) : (
+              <>
+                <li className="nav-item">
+                  <NavLink className={navClass} to="/login">
+                    Login
+                  </NavLink>
+                </li>
 
-            <li className="nav-item">
-              <NavLink className={navClass} to="/login">
-                Login
-              </NavLink>
-            </li>
-
-            <li className="nav-item">
-              <NavLink className={navClass} to="/register">
-                Register
-              </NavLink>
-            </li>
+                <li className="nav-item">
+                  <NavLink className={navClass} to="/register">
+                    Register
+                  </NavLink>
+                </li>
+              </>
+            )}
           </ul>
         </div>
       </div>
