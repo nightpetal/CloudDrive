@@ -53,13 +53,13 @@ namespace CloudDrive.API.Controllers
 
         [HttpPost("refresh")]
         public async Task<ActionResult<AuthResponse>> Refresh(
-            [FromBody] string refreshToken,
+            [FromBody] RefreshTokenRequest request,
             CancellationToken cancellationToken)
         {
             try
             {
                 var response = await _auth.RefreshToken(
-                    refreshToken,
+                    request.RefreshToken,
                     cancellationToken);
 
                 return Ok(response);

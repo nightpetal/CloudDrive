@@ -8,12 +8,14 @@ namespace CloudDrive.Application.Services
     {
         private readonly IFileRepository _fileRepo;
         private readonly IStorageService _storageService;
+        private readonly IUserRepository _userRepo;
         private const string BucketName = "clouddrive";
 
-        public FileService(IFileRepository fileRepo, IStorageService storageService)
+        public FileService(IFileRepository fileRepo, IStorageService storageService, IUserRepository userRepo)
         {
             _fileRepo = fileRepo;
             _storageService = storageService;
+            _userRepo = userRepo;
         }
 
         public async Task<FilesInfo> AddFileAsync(Guid userId, AddFileDto fileDto, CancellationToken token)
@@ -33,6 +35,15 @@ namespace CloudDrive.Application.Services
             };
 
             await _fileRepo.CreateAsync(file, token);
+
+            // Update user's storage usage
+            var user = await _userRepo.GetByIdAsync(userId, token);
+            if (user != null)
+            {
+                user.StorageUsed += fileDto.SizeBytes;
+                await _userRepo.UpdateAsync(user, token);
+            }
+
             return file;
         }
 
@@ -47,6 +58,7 @@ namespace CloudDrive.Application.Services
             // Generate unique storage key
             var storageKey = $"{userId}/{DateTime.UtcNow:yyyy-MM-dd}/{Guid.NewGuid()}_{fileName}";
             var extension = Path.GetExtension(fileName);
+            var fileSizeBytes = (int)fileStream.Length;
 
             try
             {
@@ -62,11 +74,20 @@ namespace CloudDrive.Application.Services
                     MimeType = mimeType,
                     OrginalName = fileName,
                     StorageKey = storageKey,
-                    SizeBytes = (int)fileStream.Length,
+                    SizeBytes = fileSizeBytes,
                     CreatedAt = DateTime.UtcNow,
                 };
 
                 await _fileRepo.CreateAsync(file, token);
+
+                // Update user's storage usage
+                var user = await _userRepo.GetByIdAsync(userId, token);
+                if (user != null)
+                {
+                    user.StorageUsed += fileSizeBytes;
+                    await _userRepo.UpdateAsync(user, token);
+                }
+
                 return file;
             }
             catch (Exception ex)
@@ -92,10 +113,28 @@ namespace CloudDrive.Application.Services
 
         public async Task DeleteFileAsync(Guid userId, Guid fileId, CancellationToken token)
         {
+            // Get the file before deletion to retrieve its size
+            var file = await _fileRepo.GetByIdAsync(userId, fileId, token);
+            if (file == null)
+            {
+                throw new Exception("File not found");
+            }
+
             bool flag = await _fileRepo.DeleteAsync(userId, fileId, token);
             if (!flag)
             {
                 throw new Exception("Failed to delete");
+            }
+
+            // Update user's storage usage after successful deletion
+            var user = await _userRepo.GetByIdAsync(userId, token);
+            if (user != null)
+            {
+                user.StorageUsed -= file.SizeBytes;
+                // Ensure StorageUsed doesn't go negative
+                if (user.StorageUsed < 0)
+                    user.StorageUsed = 0;
+                await _userRepo.UpdateAsync(user, token);
             }
         }
 
